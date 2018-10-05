@@ -29,6 +29,14 @@ func (t *internalTimer) Reset(d time.Duration) bool {
 	return t.clock.resetTimer(t, d)
 }
 
+type internalTicker struct {
+	*internalTimer
+}
+
+func (t *internalTicker) Stop() {
+	t.clock.stopTimer(t.internalTimer)
+}
+
 type internalClock struct {
 	mu          sync.Mutex
 	now         time.Time
@@ -106,6 +114,12 @@ func (c *internalClock) makeMockTimer(d time.Duration, isTicker bool, callback f
 	c.nextTimerID++
 
 	return t
+}
+
+func (c *internalClock) makeMockTicker(d time.Duration, isTicker bool, callback func()) *internalTicker {
+	return &internalTicker{
+		internalTimer: c.makeMockTimer(d, isTicker, callback),
+	}
 }
 
 func (c *internalClock) stopTimer(t *internalTimer) bool {

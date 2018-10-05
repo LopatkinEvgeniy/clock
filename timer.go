@@ -9,3 +9,14 @@ type Timer interface {
 	Reset(d time.Duration) bool
 	Stop() bool
 }
+
+var _ Timer = (*RealTimer)(nil)
+var _ Timer = (*internalTimer)(nil)
+
+type RealTimer struct {
+	*time.Timer
+}
+
+func (t *RealTimer) Ch() <-chan time.Time {
+	return t.C
+}

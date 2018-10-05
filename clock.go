@@ -4,6 +4,63 @@ import (
 	"time"
 )
 
+type Clock interface {
+	Now() time.Time
+	After(d time.Duration) <-chan time.Time
+	AfterFunc(d time.Duration, f func()) Timer
+	Since(t time.Time) time.Duration
+	Until(t time.Time) time.Duration
+	Sleep(d time.Duration)
+	Tick(d time.Duration) <-chan time.Time
+	NewTicker(d time.Duration) Ticker
+	NewTimer(d time.Duration) Timer
+}
+
+var _ Clock = (*MockClock)(nil)
+var _ Clock = (RealClock)(RealClock{})
+
+type RealClock struct{}
+
+func New() RealClock {
+	return RealClock{}
+}
+
+func (RealClock) Now() time.Time {
+	return time.Now()
+}
+
+func (RealClock) After(d time.Duration) <-chan time.Time {
+	return time.After(d)
+}
+
+func (RealClock) AfterFunc(d time.Duration, f func()) Timer {
+	return &RealTimer{Timer: time.AfterFunc(d, f)}
+}
+
+func (RealClock) Since(t time.Time) time.Duration {
+	return time.Since(t)
+}
+
+func (RealClock) Until(t time.Time) time.Duration {
+	return time.Until(t)
+}
+
+func (RealClock) Sleep(d time.Duration) {
+	time.Sleep(d)
+}
+
+func (RealClock) Tick(d time.Duration) <-chan time.Time {
+	return time.Tick(d)
+}
+
+func (RealClock) NewTicker(d time.Duration) Ticker {
+	return &RealTicker{Ticker: time.NewTicker(d)}
+}
+
+func (RealClock) NewTimer(d time.Duration) Timer {
+	return &RealTimer{Timer: time.NewTimer(d)}
+}
+
 type MockClock struct {
 	*internalClock
 }
@@ -50,7 +107,7 @@ func (c *MockClock) Tick(d time.Duration) <-chan time.Time {
 }
 
 func (c *MockClock) NewTicker(d time.Duration) Ticker {
-	return c.makeMockTimer(d, true, nil)
+	return c.makeMockTicker(d, true, nil)
 }
 
 func (c *MockClock) NewTimer(d time.Duration) Timer {

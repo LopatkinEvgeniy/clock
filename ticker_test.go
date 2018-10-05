@@ -72,10 +72,7 @@ func TestMockTickerStop(t *testing.T) {
 		default:
 		}
 
-		wasActive := ticker.Stop()
-		if !wasActive {
-			t.Fatal("Unexpected stop result value")
-		}
+		ticker.Stop()
 
 		for i := 0; i < 100; i++ {
 			c.Add(d)
@@ -101,10 +98,7 @@ func TestMockTickerStop(t *testing.T) {
 			t.Fatal("Unexpected ticker's channel receive")
 		}
 
-		wasActive := ticker.Stop()
-		if !wasActive {
-			t.Fatal("Unexpected stop result value")
-		}
+		ticker.Stop()
 
 		for i := 0; i < 100; i++ {
 			c.Add(d)
@@ -121,15 +115,8 @@ func TestMockTickerStop(t *testing.T) {
 		c := clock.NewMock()
 		ticker := c.NewTicker(time.Nanosecond)
 
-		wasActive := ticker.Stop()
-		if !wasActive {
-			t.Fatal("Unexpected stop result value")
-		}
 		for i := 0; i < 5; i++ {
-			wasActive := ticker.Stop()
-			if wasActive {
-				t.Fatal("Unexpected stop result value")
-			}
+			ticker.Stop()
 		}
 
 		c.Add(time.Hour)
@@ -159,9 +146,6 @@ func TestMockTickerStopStress(t *testing.T) {
 			t.Fatalf("Unexpected time received from the channel, expected=%s, actual=%s", expectedTime, actualTime)
 		}
 
-		wasActive := ticker.Stop()
-		if !wasActive {
-			t.Fatal("Unexpected stop result value")
-		}
+		ticker.Stop()
 	}
 }
