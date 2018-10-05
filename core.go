@@ -11,6 +11,7 @@ type internalTimer struct {
 	ch          chan time.Time
 	triggerTime time.Time
 	isActive    bool
+	callback    func()
 
 	isTicker bool
 	duration time.Duration
@@ -71,13 +72,20 @@ func (c *internalClock) moveTimeForward(d time.Duration) {
 		} else {
 			t.isActive = false
 			delete(c.timers, t.id)
+			if t.callback != nil {
+				go t.callback()
+			}
 		}
 	}
 }
 
-func (c *internalClock) makeMockTimer(d time.Duration, isTicker bool) *internalTimer {
+func (c *internalClock) makeMockTimer(d time.Duration, isTicker bool, callback func()) *internalTimer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	if isTicker && callback != nil {
+		panic("unexpected callback for the ticker")
+	}
 
 	t := &internalTimer{
 		clock:       c,
@@ -85,6 +93,7 @@ func (c *internalClock) makeMockTimer(d time.Duration, isTicker bool) *internalT
 		ch:          make(chan time.Time, 1),
 		triggerTime: c.now.Add(d),
 		isActive:    true,
+		callback:    callback,
 
 		isTicker: isTicker,
 		duration: d,
