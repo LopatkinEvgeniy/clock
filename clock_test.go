@@ -91,3 +91,23 @@ func TestFakeClockAfter(t *testing.T) {
 }
 
 // TODO: AfterFunc tests
+
+func TestFakeClockSince(t *testing.T) {
+	tm := (time.Time{}).Add(time.Minute)
+
+	c := clock.NewFakeClock()
+	c.Add(10 * time.Minute)
+
+	expectedSince := 9 * time.Minute
+	actualSince := c.Since(tm)
+	if expectedSince != actualSince {
+		t.Fatalf("Unexpected Since result value, expected=%s, actual=%s", expectedSince, actualSince)
+	}
+
+	c.Add(10 * time.Second)
+	expectedSince = expectedSince + 10*time.Second
+	actualSince = c.Since(tm)
+	if expectedSince != actualSince {
+		t.Fatalf("Unexpected Since result value, expected=%s, actual=%s", expectedSince, actualSince)
+	}
+}
