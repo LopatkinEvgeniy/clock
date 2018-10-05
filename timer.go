@@ -5,18 +5,18 @@ import (
 )
 
 type Timer interface {
-	Ch() <-chan time.Time
+	Chan() <-chan time.Time
 	Reset(d time.Duration) bool
 	Stop() bool
 }
 
-var _ Timer = (*RealTimer)(nil)
+var _ Timer = (*realTimer)(nil)
 var _ Timer = (*internalTimer)(nil)
 
-type RealTimer struct {
+type realTimer struct {
 	*time.Timer
 }
 
-func (t *RealTimer) Ch() <-chan time.Time {
+func (t *realTimer) Chan() <-chan time.Time {
 	return t.C
 }

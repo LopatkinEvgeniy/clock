@@ -17,7 +17,7 @@ type internalTimer struct {
 	duration time.Duration
 }
 
-func (t *internalTimer) Ch() <-chan time.Time {
+func (t *internalTimer) Chan() <-chan time.Time {
 	return t.ch
 }
 
@@ -44,8 +44,9 @@ type internalClock struct {
 	timers      map[int]*internalTimer
 }
 
-func newInternalClock() *internalClock {
+func newInternalClock(t time.Time) *internalClock {
 	return &internalClock{
+		now:    t,
 		timers: make(map[int]*internalTimer),
 	}
 }
@@ -91,7 +92,7 @@ func (c *internalClock) moveTimeForward(d time.Duration) {
 	}
 }
 
-func (c *internalClock) makeMockTimer(d time.Duration, isTicker bool, callback func()) *internalTimer {
+func (c *internalClock) newInternalTimer(d time.Duration, isTicker bool, callback func()) *internalTimer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -116,9 +117,9 @@ func (c *internalClock) makeMockTimer(d time.Duration, isTicker bool, callback f
 	return t
 }
 
-func (c *internalClock) makeMockTicker(d time.Duration, isTicker bool, callback func()) *internalTicker {
+func (c *internalClock) newInternalTicker(d time.Duration, isTicker bool, callback func()) *internalTicker {
 	return &internalTicker{
-		internalTimer: c.makeMockTimer(d, isTicker, callback),
+		internalTimer: c.newInternalTimer(d, isTicker, callback),
 	}
 }
 

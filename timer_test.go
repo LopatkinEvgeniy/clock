@@ -8,14 +8,14 @@ import (
 	"github.com/LopatkinEvgeniy/clock"
 )
 
-func TestMockTimerCh(t *testing.T) {
-	c := clock.NewMock()
+func TestFakeTimerCh(t *testing.T) {
+	c := clock.NewFakeClock()
 	timer := c.NewTimer(100 * time.Second)
 
 	for i := 0; i < 99; i++ {
 		c.Add(time.Second)
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 			t.Fatal("Unexpected timer's channel receive")
 		default:
 		}
@@ -23,14 +23,14 @@ func TestMockTimerCh(t *testing.T) {
 
 	c.Add(time.Second)
 	select {
-	case <-timer.Ch():
+	case <-timer.Chan():
 	default:
 		t.Fatal("Expected receive from the timer's channel")
 	}
 }
 
-func TestMockTimerChStress(t *testing.T) {
-	c := clock.NewMock()
+func TestFakeTimerChStress(t *testing.T) {
+	c := clock.NewFakeClock()
 	timer := c.NewTimer(10000 * time.Second)
 
 	wg := sync.WaitGroup{}
@@ -42,7 +42,7 @@ func TestMockTimerChStress(t *testing.T) {
 
 			c.Add(time.Second)
 			select {
-			case <-timer.Ch():
+			case <-timer.Chan():
 				t.Fatal("Unexpected timer's channel receive")
 			default:
 			}
@@ -52,19 +52,19 @@ func TestMockTimerChStress(t *testing.T) {
 
 	c.Add(time.Second)
 	select {
-	case <-timer.Ch():
+	case <-timer.Chan():
 	default:
 		t.Fatal("Expected receive from the timer's channel")
 	}
 }
 
-func TestMockTimerReset(t *testing.T) {
+func TestFakeTimerReset(t *testing.T) {
 	t.Run("timer not expired", func(t *testing.T) {
-		c := clock.NewMock()
+		c := clock.NewFakeClock()
 		timer := c.NewTimer(time.Nanosecond)
 
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 			t.Fatal("Unexpected timer's channel receive")
 		default:
 		}
@@ -76,14 +76,14 @@ func TestMockTimerReset(t *testing.T) {
 	})
 
 	t.Run("timer expired", func(t *testing.T) {
-		c := clock.NewMock()
+		c := clock.NewFakeClock()
 		d := time.Minute
 		timer := c.NewTimer(d)
 
 		c.Add(d)
 
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 		default:
 			t.Fatal("Expected receive from the timer's channel")
 		}
@@ -95,7 +95,7 @@ func TestMockTimerReset(t *testing.T) {
 	})
 
 	t.Run("reset multiple times", func(t *testing.T) {
-		c := clock.NewMock()
+		c := clock.NewFakeClock()
 		timer := c.NewTimer(time.Nanosecond)
 		expectedDuration := time.Minute
 
@@ -105,7 +105,7 @@ func TestMockTimerReset(t *testing.T) {
 
 		c.Add(expectedDuration)
 
-		actualTime := <-timer.Ch()
+		actualTime := <-timer.Chan()
 		expectedTime := c.Now()
 		if expectedTime != actualTime {
 			t.Fatalf("Unexpected time received from the channel, expected=%s, actual=%s", expectedTime, actualTime)
@@ -118,8 +118,8 @@ func TestMockTimerReset(t *testing.T) {
 	})
 }
 
-func TestMockTimerResetStress(t *testing.T) {
-	c := clock.NewMock()
+func TestFakeTimerResetStress(t *testing.T) {
+	c := clock.NewFakeClock()
 	d := time.Hour
 	timer := c.NewTimer(d)
 
@@ -128,7 +128,7 @@ func TestMockTimerResetStress(t *testing.T) {
 			c.Add(d)
 		}()
 
-		actualTime := <-timer.Ch()
+		actualTime := <-timer.Chan()
 		expectedTime := c.Now()
 		if expectedTime != actualTime {
 			t.Fatalf("Unexpected time received from the channel, expected=%s, actual=%s", expectedTime, actualTime)
@@ -141,13 +141,13 @@ func TestMockTimerResetStress(t *testing.T) {
 	}
 }
 
-func TestMockTimerStop(t *testing.T) {
+func TestFakeTimerStop(t *testing.T) {
 	t.Run("timer not expired", func(t *testing.T) {
-		c := clock.NewMock()
+		c := clock.NewFakeClock()
 		timer := c.NewTimer(time.Nanosecond)
 
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 			t.Fatal("Unexpected timer's channel receive")
 		default:
 		}
@@ -160,21 +160,21 @@ func TestMockTimerStop(t *testing.T) {
 		c.Add(time.Hour)
 
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 			t.Fatal("Unexpected timer's channel receive")
 		default:
 		}
 	})
 
 	t.Run("timer expired", func(t *testing.T) {
-		c := clock.NewMock()
+		c := clock.NewFakeClock()
 		d := time.Minute
 		timer := c.NewTimer(d)
 
 		c.Add(d)
 
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 		default:
 			t.Fatal("Expected receive from the timer's channel")
 		}
@@ -185,14 +185,14 @@ func TestMockTimerStop(t *testing.T) {
 		}
 
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 			t.Fatal("Unexpected timer's channel receive")
 		default:
 		}
 	})
 
 	t.Run("stop multiple times", func(t *testing.T) {
-		c := clock.NewMock()
+		c := clock.NewFakeClock()
 		timer := c.NewTimer(time.Nanosecond)
 
 		wasActive := timer.Stop()
@@ -209,15 +209,15 @@ func TestMockTimerStop(t *testing.T) {
 		c.Add(time.Hour)
 
 		select {
-		case <-timer.Ch():
+		case <-timer.Chan():
 			t.Fatal("Unexpected timer's channel receive")
 		default:
 		}
 	})
 }
 
-func TestMockTimerStopStress(t *testing.T) {
-	c := clock.NewMock()
+func TestFakeTimerStopStress(t *testing.T) {
+	c := clock.NewFakeClock()
 	d := time.Hour
 
 	for i := 0; i < 100000; i++ {
@@ -227,7 +227,7 @@ func TestMockTimerStopStress(t *testing.T) {
 			c.Add(d)
 		}()
 
-		actualTime := <-timer.Ch()
+		actualTime := <-timer.Chan()
 		expectedTime := c.Now()
 		if expectedTime != actualTime {
 			t.Fatalf("Unexpected time received from the channel, expected=%s, actual=%s", expectedTime, actualTime)

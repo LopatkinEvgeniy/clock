@@ -16,100 +16,106 @@ type Clock interface {
 	NewTimer(d time.Duration) Timer
 }
 
-var _ Clock = (*MockClock)(nil)
-var _ Clock = (RealClock)(RealClock{})
+var _ Clock = (FakeClock)(FakeClock{})
+var _ Clock = (realClock)(realClock{})
 
-type RealClock struct{}
+type realClock struct{}
 
-func New() RealClock {
-	return RealClock{}
+func NewRealClock() Clock {
+	return realClock{}
 }
 
-func (RealClock) Now() time.Time {
+func (realClock) Now() time.Time {
 	return time.Now()
 }
 
-func (RealClock) After(d time.Duration) <-chan time.Time {
+func (realClock) After(d time.Duration) <-chan time.Time {
 	return time.After(d)
 }
 
-func (RealClock) AfterFunc(d time.Duration, f func()) Timer {
-	return &RealTimer{Timer: time.AfterFunc(d, f)}
+func (realClock) AfterFunc(d time.Duration, f func()) Timer {
+	return &realTimer{Timer: time.AfterFunc(d, f)}
 }
 
-func (RealClock) Since(t time.Time) time.Duration {
+func (realClock) Since(t time.Time) time.Duration {
 	return time.Since(t)
 }
 
-func (RealClock) Until(t time.Time) time.Duration {
+func (realClock) Until(t time.Time) time.Duration {
 	return time.Until(t)
 }
 
-func (RealClock) Sleep(d time.Duration) {
+func (realClock) Sleep(d time.Duration) {
 	time.Sleep(d)
 }
 
-func (RealClock) Tick(d time.Duration) <-chan time.Time {
+func (realClock) Tick(d time.Duration) <-chan time.Time {
 	return time.Tick(d)
 }
 
-func (RealClock) NewTicker(d time.Duration) Ticker {
-	return &RealTicker{Ticker: time.NewTicker(d)}
+func (realClock) NewTicker(d time.Duration) Ticker {
+	return &realTicker{Ticker: time.NewTicker(d)}
 }
 
-func (RealClock) NewTimer(d time.Duration) Timer {
-	return &RealTimer{Timer: time.NewTimer(d)}
+func (realClock) NewTimer(d time.Duration) Timer {
+	return &realTimer{Timer: time.NewTimer(d)}
 }
 
-type MockClock struct {
+type FakeClock struct {
 	*internalClock
 }
 
-func NewMock() *MockClock {
-	return &MockClock{
-		internalClock: newInternalClock(),
+func NewFakeClock() FakeClock {
+	return FakeClock{
+		internalClock: newInternalClock(time.Time{}),
 	}
 }
 
-func (c *MockClock) Add(d time.Duration) {
+func NewFakeClockAt(t time.Time) FakeClock {
+	return FakeClock{
+		internalClock: newInternalClock(t),
+	}
+}
+
+func (c FakeClock) Add(d time.Duration) {
 	c.moveTimeForward(d)
 }
 
-func (c *MockClock) Now() time.Time {
+func (c FakeClock) Now() time.Time {
 	return c.getCurrentTime()
 }
 
-func (c *MockClock) After(d time.Duration) <-chan time.Time {
-	return c.NewTimer(d).Ch()
+func (c FakeClock) After(d time.Duration) <-chan time.Time {
+	return c.NewTimer(d).Chan()
 }
 
-func (c *MockClock) AfterFunc(d time.Duration, f func()) Timer {
-	return c.makeMockTimer(d, false, f)
+func (c FakeClock) AfterFunc(d time.Duration, f func()) Timer {
+	return c.newInternalTimer(d, false, f)
 }
 
-func (c *MockClock) Since(t time.Time) time.Duration {
+func (c FakeClock) Since(t time.Time) time.Duration {
 	return c.Now().Sub(t)
 }
 
-func (c *MockClock) Until(t time.Time) time.Duration {
+func (c FakeClock) Until(t time.Time) time.Duration {
 	return t.Sub(c.Now())
 }
 
-func (c *MockClock) Sleep(d time.Duration) {
-	<-c.NewTimer(d).Ch()
+func (c FakeClock) Sleep(d time.Duration) {
+	<-c.NewTimer(d).Chan()
 }
 
-func (c *MockClock) Tick(d time.Duration) <-chan time.Time {
+func (c FakeClock) Tick(d time.Duration) <-chan time.Time {
 	if d <= 0 {
 		return nil
 	}
-	return c.NewTicker(d).Ch()
+	return c.NewTicker(d).Chan()
 }
 
-func (c *MockClock) NewTicker(d time.Duration) Ticker {
-	return c.makeMockTicker(d, true, nil)
+func (c FakeClock) NewTicker(d time.Duration) Ticker {
+	return c.newInternalTicker(d, true, nil)
 }
 
-func (c *MockClock) NewTimer(d time.Duration) Timer {
-	return c.makeMockTimer(d, false, nil)
+func (c FakeClock) NewTimer(d time.Duration) Timer {
+	return c.newInternalTimer(d, false, nil)
 }
