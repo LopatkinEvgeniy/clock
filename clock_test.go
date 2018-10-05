@@ -188,3 +188,33 @@ func TestFakeClockSleep(t *testing.T) {
 	c.Add(time.Minute)
 	<-ch3
 }
+
+func TestFakeClockTick(t *testing.T) {
+	c := clock.NewFakeClock()
+
+	if c.Tick(0) != nil {
+		t.Fatal("Nil channel expected")
+	}
+	if c.Tick(-1*time.Minute) != nil {
+		t.Fatal("Nil channel expected")
+	}
+
+	tickCh := c.Tick(100 * time.Second)
+
+	for i := 0; i < 100; i++ {
+		for i := 0; i < 99; i++ {
+			c.Add(time.Second)
+			select {
+			case <-tickCh:
+				t.Fatal("Unexpected ticker's channel receive")
+			default:
+			}
+		}
+		c.Add(time.Second)
+		select {
+		case <-tickCh:
+		default:
+			t.Fatal("Expected receive from the ticker's channel")
+		}
+	}
+}
