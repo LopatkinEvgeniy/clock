@@ -111,3 +111,21 @@ func TestFakeClockSince(t *testing.T) {
 		t.Fatalf("Unexpected Since result value, expected=%s, actual=%s", expectedSince, actualSince)
 	}
 }
+
+func TestFakeClockUntil(t *testing.T) {
+	tm := (time.Time{}).Add(10 * time.Minute)
+
+	c := clock.NewFakeClock()
+
+	expectedUntil := 10 * time.Minute
+
+	for i := 0; i < 9; i++ {
+		actualUntil := c.Until(tm)
+		if expectedUntil != actualUntil {
+			t.Fatalf("Unexpected Until result value, expected=%s, actual=%s", expectedUntil, actualUntil)
+		}
+
+		c.Add(time.Minute)
+		expectedUntil -= time.Minute
+	}
+}
