@@ -1,11 +1,62 @@
 package clock_test
 
 import (
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/LopatkinEvgeniy/clock"
 )
+
+func TestMockTimerCh(t *testing.T) {
+	c := clock.NewMock()
+	timer := c.NewTimer(100 * time.Second)
+
+	for i := 0; i < 99; i++ {
+		c.Add(time.Second)
+		select {
+		case <-timer.Ch():
+			t.Fatal("Unexpected timer's channel receive")
+		default:
+		}
+	}
+
+	c.Add(time.Second)
+	select {
+	case <-timer.Ch():
+	default:
+		t.Fatal("Expected receive from the timer's channel")
+	}
+}
+
+func TestMockTimerChStress(t *testing.T) {
+	c := clock.NewMock()
+	timer := c.NewTimer(10000 * time.Second)
+
+	wg := sync.WaitGroup{}
+	for i := 0; i < 9999; i++ {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			c.Add(time.Second)
+			select {
+			case <-timer.Ch():
+				t.Fatal("Unexpected timer's channel receive")
+			default:
+			}
+		}()
+	}
+	wg.Wait()
+
+	c.Add(time.Second)
+	select {
+	case <-timer.Ch():
+	default:
+		t.Fatal("Expected receive from the timer's channel")
+	}
+}
 
 func TestMockTimerReset(t *testing.T) {
 	t.Run("timer not expired", func(t *testing.T) {

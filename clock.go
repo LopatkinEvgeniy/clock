@@ -32,7 +32,7 @@ func (c *MockClock) Add(d time.Duration) {
 	c.now = c.now.Add(d)
 
 	for _, t := range c.timers {
-		if t.triggerTime.Before(c.now) {
+		if t.triggerTime.After(c.now) {
 			continue
 		}
 
