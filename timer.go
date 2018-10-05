@@ -16,6 +16,9 @@ type mockTimer struct {
 	ch          chan time.Time
 	triggerTime time.Time
 	isActive    bool
+
+	isTicker bool
+	duration time.Duration
 }
 
 func (t *mockTimer) Ch() <-chan time.Time {
