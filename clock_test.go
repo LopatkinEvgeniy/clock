@@ -90,7 +90,59 @@ func TestFakeClockAfter(t *testing.T) {
 	}
 }
 
-// TODO: AfterFunc tests
+func TestFakeClockAfterFunc(t *testing.T) {
+	t.Run("check callback", func(t *testing.T) {
+		c := clock.NewFakeClock()
+
+		doneCh := make(chan struct{})
+		timer := c.AfterFunc(10*time.Minute, func() {
+			close(doneCh)
+		})
+
+		c.Add(5 * time.Minute)
+		time.Sleep(100 * time.Millisecond)
+
+		select {
+		case <-doneCh:
+			t.Fatal("Permature callback's call")
+		default:
+		}
+
+		c.Add(5 * time.Minute)
+		<-doneCh
+
+		time.Sleep(100 * time.Millisecond)
+		select {
+		case <-timer.Chan():
+			t.Fatal("Unexpected receive from the timer's channel")
+		default:
+		}
+	})
+
+	t.Run("stop timer", func(t *testing.T) {
+		c := clock.NewFakeClock()
+
+		doneCh := make(chan struct{})
+		timer := c.AfterFunc(10*time.Minute, func() {
+			close(doneCh)
+		})
+
+		wasActive := timer.Stop()
+		if !wasActive {
+			t.Fatal("Unexpected stop result value")
+		}
+
+		for i := 0; i < 10; i++ {
+			c.Add(10 * time.Minute)
+			time.Sleep(10 * time.Millisecond)
+			select {
+			case <-doneCh:
+				t.Fatal("Unexpected callback after Stop call")
+			default:
+			}
+		}
+	})
+}
 
 func TestFakeClockSince(t *testing.T) {
 	tm := (time.Time{}).Add(time.Minute)
