@@ -60,20 +60,24 @@ func (c *internalClock) moveTimeForward(d time.Duration) {
 			continue
 		}
 
-		select {
-		case t.ch <- t.triggerTime:
-		default:
+		if !t.isTicker {
+			t.isActive = false
+			delete(c.timers, t.id)
+			if t.callback != nil {
+				go t.callback()
+			}
+		}
+
+		if t.callback == nil {
+			select {
+			case t.ch <- t.triggerTime:
+			default:
+			}
 		}
 
 		if t.isTicker {
 			for !t.triggerTime.After(c.now) {
 				t.triggerTime = t.triggerTime.Add(t.duration)
-			}
-		} else {
-			t.isActive = false
-			delete(c.timers, t.id)
-			if t.callback != nil {
-				go t.callback()
 			}
 		}
 	}
