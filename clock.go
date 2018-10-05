@@ -81,6 +81,10 @@ func (c FakeClock) Add(d time.Duration) {
 	c.moveTimeForward(d)
 }
 
+func (c FakeClock) WaitersCount() int {
+	return c.waitersCount()
+}
+
 func (c FakeClock) Now() time.Time {
 	return c.getCurrentTime()
 }

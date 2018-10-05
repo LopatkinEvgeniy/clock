@@ -129,3 +129,62 @@ func TestFakeClockUntil(t *testing.T) {
 		expectedUntil -= time.Minute
 	}
 }
+
+func TestFakeClockSleep(t *testing.T) {
+	c := clock.NewFakeClock()
+
+	ch1 := make(chan struct{})
+	ch2 := make(chan struct{})
+	ch3 := make(chan struct{})
+
+	go func() {
+		c.Sleep(time.Minute)
+		close(ch1)
+	}()
+	go func() {
+		c.Sleep(2 * time.Minute)
+		close(ch2)
+	}()
+	go func() {
+		c.Sleep(3 * time.Minute)
+		close(ch3)
+	}()
+
+	for {
+		if c.WaitersCount() == 3 {
+			break
+		}
+		time.Sleep(time.Millisecond)
+	}
+
+	select {
+	case <-ch1:
+		t.Fatal("sleep ends too soon")
+	case <-ch2:
+		t.Fatal("sleep ends too soon")
+	case <-ch3:
+		t.Fatal("sleep ends too soon")
+	default:
+	}
+
+	c.Add(time.Minute)
+
+	select {
+	case <-ch1:
+	case <-ch2:
+		t.Fatal("sleep ends too soon")
+	case <-ch3:
+		t.Fatal("sleep ends too soon")
+	}
+
+	c.Add(time.Minute)
+
+	select {
+	case <-ch2:
+	case <-ch3:
+		t.Fatal("sleep ends too soon")
+	}
+
+	c.Add(time.Minute)
+	<-ch3
+}

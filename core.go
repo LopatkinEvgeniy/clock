@@ -153,3 +153,10 @@ func (c *internalClock) resetTimer(t *internalTimer, d time.Duration) bool {
 
 	return timerWasActive
 }
+
+func (c *internalClock) waitersCount() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	return len(c.timers)
+}
