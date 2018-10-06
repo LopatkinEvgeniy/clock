@@ -7,13 +7,13 @@ type Ticker interface {
 	Stop()
 }
 
-var _ Ticker = (*realTicker)(nil)
+var _ Ticker = realTicker{}
 var _ Ticker = (*internalTicker)(nil)
 
 type realTicker struct {
 	*time.Ticker
 }
 
-func (t *realTicker) Chan() <-chan time.Time {
+func (t realTicker) Chan() <-chan time.Time {
 	return t.C
 }

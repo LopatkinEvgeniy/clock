@@ -16,8 +16,8 @@ type Clock interface {
 	NewTimer(d time.Duration) Timer
 }
 
-var _ Clock = (FakeClock)(FakeClock{})
-var _ Clock = (realClock)(realClock{})
+var _ Clock = FakeClock{}
+var _ Clock = realClock{}
 
 type realClock struct{}
 
@@ -34,7 +34,7 @@ func (realClock) After(d time.Duration) <-chan time.Time {
 }
 
 func (realClock) AfterFunc(d time.Duration, f func()) Timer {
-	return &realTimer{Timer: time.AfterFunc(d, f)}
+	return realTimer{Timer: time.AfterFunc(d, f)}
 }
 
 func (realClock) Since(t time.Time) time.Duration {
@@ -54,11 +54,11 @@ func (realClock) Tick(d time.Duration) <-chan time.Time {
 }
 
 func (realClock) NewTicker(d time.Duration) Ticker {
-	return &realTicker{Ticker: time.NewTicker(d)}
+	return realTicker{Ticker: time.NewTicker(d)}
 }
 
 func (realClock) NewTimer(d time.Duration) Timer {
-	return &realTimer{Timer: time.NewTimer(d)}
+	return realTimer{Timer: time.NewTimer(d)}
 }
 
 type FakeClock struct {

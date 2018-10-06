@@ -10,13 +10,13 @@ type Timer interface {
 	Stop() bool
 }
 
-var _ Timer = (*realTimer)(nil)
+var _ Timer = realTimer{}
 var _ Timer = (*internalTimer)(nil)
 
 type realTimer struct {
 	*time.Timer
 }
 
-func (t *realTimer) Chan() <-chan time.Time {
+func (t realTimer) Chan() <-chan time.Time {
 	return t.C
 }
