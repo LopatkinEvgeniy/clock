@@ -8,7 +8,7 @@ import (
 	"github.com/LopatkinEvgeniy/clock"
 )
 
-func TestFakeTimerCh(t *testing.T) {
+func TestFakeTimerChan(t *testing.T) {
 	c := clock.NewFakeClock()
 	timer := c.NewTimer(100 * time.Second)
 
@@ -29,7 +29,7 @@ func TestFakeTimerCh(t *testing.T) {
 	}
 }
 
-func TestFakeTimerChStress(t *testing.T) {
+func TestFakeTimerChanStress(t *testing.T) {
 	c := clock.NewFakeClock()
 	timer := c.NewTimer(10000 * time.Second)
 
