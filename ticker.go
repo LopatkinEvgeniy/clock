@@ -16,7 +16,7 @@ type realTicker struct {
 	*time.Ticker
 }
 
-// Chan implementats Ticker.
+// Chan implements Ticker.
 func (t realTicker) Chan() <-chan time.Time {
 	return t.C
 }
@@ -26,12 +26,12 @@ type mockTicker struct {
 	*internalTimer
 }
 
-// Chan implementats Ticker.
+// Chan implements Ticker.
 func (t mockTicker) Chan() <-chan time.Time {
 	return t.ch
 }
 
-// Stop implementats Ticker.
+// Stop implements Ticker.
 func (t mockTicker) Stop() {
 	t.clock.stopTimer(t.internalTimer)
 }

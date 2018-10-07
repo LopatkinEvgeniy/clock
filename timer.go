@@ -19,7 +19,7 @@ type realTimer struct {
 	*time.Timer
 }
 
-// Chan implementats Timer.
+// Chan implements Timer.
 func (t realTimer) Chan() <-chan time.Time {
 	return t.C
 }
@@ -29,17 +29,17 @@ type mockTimer struct {
 	*internalTimer
 }
 
-// Chan implementats Timer.
+// Chan implements Timer.
 func (t mockTimer) Chan() <-chan time.Time {
 	return t.ch
 }
 
-// Stop implementats Timer.
+// Stop implements Timer.
 func (t mockTimer) Stop() bool {
 	return t.clock.stopTimer(t.internalTimer)
 }
 
-// Reset implementats Timer.
+// Reset implements Timer.
 func (t mockTimer) Reset(d time.Duration) bool {
 	return t.clock.resetTimer(t.internalTimer, d)
 }
