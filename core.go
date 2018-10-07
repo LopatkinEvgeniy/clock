@@ -109,7 +109,7 @@ func (c *internalClock) newInternalTimer(d time.Duration, isTicker bool, callbac
 }
 
 // stopTimer unregisters specified timer.
-// It returns true if specified timer was active.
+// It returns true if the specified timer was active.
 func (c *internalClock) stopTimer(t *internalTimer) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -124,7 +124,7 @@ func (c *internalClock) stopTimer(t *internalTimer) bool {
 
 // resetTimer changes duration for the specified timer.
 // Specified timer would be registered again.
-// realTimer returns true if specified timer was active.
+// resetTimer returns true if specified timer was active.
 func (c *internalClock) resetTimer(t *internalTimer, d time.Duration) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
