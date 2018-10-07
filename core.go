@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// internalTimer is an internal representaion
+// of mock timers, tickers and sleepers.
 type internalTimer struct {
 	clock       *internalClock
 	id          int
@@ -16,6 +18,11 @@ type internalTimer struct {
 	duration    time.Duration
 }
 
+// internalClock in an internal implementation
+// of base mock clock functionality.
+// internalClock has it's own current time value.
+// All active timers/tickers/waiters are registered here.
+// All internalClock's methods are thread-safe.
 type internalClock struct {
 	mu          sync.Mutex
 	now         time.Time
@@ -23,6 +30,7 @@ type internalClock struct {
 	timers      map[int]*internalTimer
 }
 
+// newInternalClock creates a new initialized internalClock instance.
 func newInternalClock(t time.Time) *internalClock {
 	return &internalClock{
 		now:    t,
@@ -30,6 +38,7 @@ func newInternalClock(t time.Time) *internalClock {
 	}
 }
 
+// getCurrentTime returns an internalClock's current time value.
 func (c *internalClock) getCurrentTime() time.Time {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -37,6 +46,9 @@ func (c *internalClock) getCurrentTime() time.Time {
 	return c.now
 }
 
+// moveTimeForward adds specified duration
+// to the current internalClock's time.
+// It will affect all registered timers.
 func (c *internalClock) moveTimeForward(d time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -71,6 +83,7 @@ func (c *internalClock) moveTimeForward(d time.Duration) {
 	}
 }
 
+// newInternalTimer creates and registres a new internalTimer instance.
 func (c *internalClock) newInternalTimer(d time.Duration, isTicker bool, callback func()) *internalTimer {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -96,6 +109,8 @@ func (c *internalClock) newInternalTimer(d time.Duration, isTicker bool, callbac
 	return t
 }
 
+// stopTimer unregisters specified timer.
+// It returns true if specified timer was active.
 func (c *internalClock) stopTimer(t *internalTimer) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -108,6 +123,9 @@ func (c *internalClock) stopTimer(t *internalTimer) bool {
 	return timerWasActive
 }
 
+// resetTimer changes duration for the specified timer.
+// Specified timer would be registered again.
+// realTimer returns true if specified timer was active.
 func (c *internalClock) resetTimer(t *internalTimer, d time.Duration) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -127,6 +145,7 @@ func (c *internalClock) resetTimer(t *internalTimer, d time.Duration) bool {
 	return timerWasActive
 }
 
+// waitersCount returns current count of registered timers, tickers and sleepers.
 func (c *internalClock) waitersCount() int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
