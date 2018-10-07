@@ -99,9 +99,8 @@ func (c *internalClock) newInternalTimer(d time.Duration, isTicker bool, callbac
 		triggerTime: c.now.Add(d),
 		isActive:    true,
 		callback:    callback,
-
-		isTicker: isTicker,
-		duration: d,
+		isTicker:    isTicker,
+		duration:    d,
 	}
 	c.timers[t.id] = t
 	c.nextTimerID++
@@ -137,6 +136,7 @@ func (c *internalClock) resetTimer(t *internalTimer, d time.Duration) bool {
 	timerWasActive := t.isActive
 	t.isActive = true
 	t.triggerTime = c.now.Add(d)
+	t.duration = d
 
 	if !timerWasActive {
 		c.timers[t.id] = t
