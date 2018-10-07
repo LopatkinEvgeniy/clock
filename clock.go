@@ -94,7 +94,9 @@ func (c FakeClock) After(d time.Duration) <-chan time.Time {
 }
 
 func (c FakeClock) AfterFunc(d time.Duration, f func()) Timer {
-	return c.newInternalTimer(d, false, f)
+	return mockTimer{
+		internalTimer: c.newInternalTimer(d, false, f),
+	}
 }
 
 func (c FakeClock) Since(t time.Time) time.Duration {
@@ -117,9 +119,13 @@ func (c FakeClock) Tick(d time.Duration) <-chan time.Time {
 }
 
 func (c FakeClock) NewTicker(d time.Duration) Ticker {
-	return c.newInternalTicker(d, true, nil)
+	return mockTicker{
+		internalTimer: c.newInternalTimer(d, true, nil),
+	}
 }
 
 func (c FakeClock) NewTimer(d time.Duration) Timer {
-	return c.newInternalTimer(d, false, nil)
+	return mockTimer{
+		internalTimer: c.newInternalTimer(d, false, nil),
+	}
 }

@@ -12,29 +12,8 @@ type internalTimer struct {
 	triggerTime time.Time
 	isActive    bool
 	callback    func()
-
-	isTicker bool
-	duration time.Duration
-}
-
-func (t *internalTimer) Chan() <-chan time.Time {
-	return t.ch
-}
-
-func (t *internalTimer) Stop() bool {
-	return t.clock.stopTimer(t)
-}
-
-func (t *internalTimer) Reset(d time.Duration) bool {
-	return t.clock.resetTimer(t, d)
-}
-
-type internalTicker struct {
-	*internalTimer
-}
-
-func (t *internalTicker) Stop() {
-	t.clock.stopTimer(t.internalTimer)
+	isTicker    bool
+	duration    time.Duration
 }
 
 type internalClock struct {
@@ -115,12 +94,6 @@ func (c *internalClock) newInternalTimer(d time.Duration, isTicker bool, callbac
 	c.nextTimerID++
 
 	return t
-}
-
-func (c *internalClock) newInternalTicker(d time.Duration, isTicker bool, callback func()) *internalTicker {
-	return &internalTicker{
-		internalTimer: c.newInternalTimer(d, isTicker, callback),
-	}
 }
 
 func (c *internalClock) stopTimer(t *internalTimer) bool {

@@ -8,7 +8,7 @@ type Ticker interface {
 }
 
 var _ Ticker = realTicker{}
-var _ Ticker = (*internalTicker)(nil)
+var _ Ticker = mockTicker{}
 
 type realTicker struct {
 	*time.Ticker
@@ -16,4 +16,16 @@ type realTicker struct {
 
 func (t realTicker) Chan() <-chan time.Time {
 	return t.C
+}
+
+type mockTicker struct {
+	*internalTimer
+}
+
+func (t mockTicker) Chan() <-chan time.Time {
+	return t.ch
+}
+
+func (t mockTicker) Stop() {
+	t.clock.stopTimer(t.internalTimer)
 }
