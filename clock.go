@@ -107,6 +107,13 @@ func (c FakeClock) WaitersCount() int {
 	return c.waitersCount()
 }
 
+// BlockUntil waits for the specified count of active timers/tickers/sleepers.
+func (c FakeClock) BlockUntil(n int) {
+	for c.waitersCount() != n {
+		time.Sleep(time.Millisecond)
+	}
+}
+
 // Now implements Clock.
 func (c FakeClock) Now() time.Time {
 	return c.getCurrentTime()

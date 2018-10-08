@@ -202,12 +202,7 @@ func TestFakeClockSleep(t *testing.T) {
 		close(ch3)
 	}()
 
-	for {
-		if c.WaitersCount() == 3 {
-			break
-		}
-		time.Sleep(time.Millisecond)
-	}
+	c.BlockUntil(3)
 
 	select {
 	case <-ch1:
