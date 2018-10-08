@@ -76,7 +76,7 @@ func (realClock) NewTimer(d time.Duration) Timer {
 }
 
 // FakeClock is an internalClock's shallow wrapper.
-// It provides special mock methods such Add or WaitersCount.
+// It provides special mock methods such Advance or WaitersCount.
 type FakeClock struct {
 	*internalClock
 }
