@@ -13,7 +13,7 @@ func TestFakeTimerChan(t *testing.T) {
 	timer := c.NewTimer(100 * time.Second)
 
 	for i := 0; i < 99; i++ {
-		c.Add(time.Second)
+		c.Advance(time.Second)
 		select {
 		case <-timer.Chan():
 			t.Fatal("Unexpected timer's channel receive")
@@ -21,7 +21,7 @@ func TestFakeTimerChan(t *testing.T) {
 		}
 	}
 
-	c.Add(time.Second)
+	c.Advance(time.Second)
 	select {
 	case <-timer.Chan():
 	default:
@@ -40,7 +40,7 @@ func TestFakeTimerChanStress(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			c.Add(time.Second)
+			c.Advance(time.Second)
 			select {
 			case <-timer.Chan():
 				t.Fatal("Unexpected timer's channel receive")
@@ -50,7 +50,7 @@ func TestFakeTimerChanStress(t *testing.T) {
 	}
 	wg.Wait()
 
-	c.Add(time.Second)
+	c.Advance(time.Second)
 	select {
 	case <-timer.Chan():
 	default:
@@ -80,7 +80,7 @@ func TestFakeTimerReset(t *testing.T) {
 		d := time.Minute
 		timer := c.NewTimer(d)
 
-		c.Add(d)
+		c.Advance(d)
 
 		select {
 		case <-timer.Chan():
@@ -103,7 +103,7 @@ func TestFakeTimerReset(t *testing.T) {
 		timer.Reset(5 * time.Minute)
 		timer.Reset(expectedDuration)
 
-		c.Add(expectedDuration)
+		c.Advance(expectedDuration)
 
 		actualTime := <-timer.Chan()
 		expectedTime := c.Now()
@@ -125,7 +125,7 @@ func TestFakeTimerResetStress(t *testing.T) {
 
 	for i := 0; i < 100000; i++ {
 		go func() {
-			c.Add(d)
+			c.Advance(d)
 		}()
 
 		actualTime := <-timer.Chan()
@@ -157,7 +157,7 @@ func TestFakeTimerStop(t *testing.T) {
 			t.Fatal("Unexpected stop result value")
 		}
 
-		c.Add(time.Hour)
+		c.Advance(time.Hour)
 
 		select {
 		case <-timer.Chan():
@@ -171,7 +171,7 @@ func TestFakeTimerStop(t *testing.T) {
 		d := time.Minute
 		timer := c.NewTimer(d)
 
-		c.Add(d)
+		c.Advance(d)
 
 		select {
 		case <-timer.Chan():
@@ -206,7 +206,7 @@ func TestFakeTimerStop(t *testing.T) {
 			}
 		}
 
-		c.Add(time.Hour)
+		c.Advance(time.Hour)
 
 		select {
 		case <-timer.Chan():
@@ -224,7 +224,7 @@ func TestFakeTimerStopStress(t *testing.T) {
 		timer := c.NewTimer(d)
 
 		go func() {
-			c.Add(d)
+			c.Advance(d)
 		}()
 
 		actualTime := <-timer.Chan()

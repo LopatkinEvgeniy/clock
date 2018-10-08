@@ -14,14 +14,14 @@ func TestFakeTickerChan(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		for i := 0; i < 99; i++ {
-			c.Add(time.Second)
+			c.Advance(time.Second)
 			select {
 			case <-ticker.Chan():
 				t.Fatal("Unexpected ticker's channel receive")
 			default:
 			}
 		}
-		c.Add(time.Second)
+		c.Advance(time.Second)
 		select {
 		case <-ticker.Chan():
 		default:
@@ -42,7 +42,7 @@ func TestFakeTickerChanStress(t *testing.T) {
 			go func() {
 				defer wg.Done()
 
-				c.Add(time.Second)
+				c.Advance(time.Second)
 				select {
 				case <-ticker.Chan():
 					t.Fatal("Unexpected ticker's channel receive")
@@ -51,7 +51,7 @@ func TestFakeTickerChanStress(t *testing.T) {
 			}()
 		}
 		wg.Wait()
-		c.Add(time.Second)
+		c.Advance(time.Second)
 		select {
 		case <-ticker.Chan():
 		default:
@@ -75,7 +75,7 @@ func TestFakeTickerStop(t *testing.T) {
 		ticker.Stop()
 
 		for i := 0; i < 100; i++ {
-			c.Add(d)
+			c.Advance(d)
 		}
 
 		select {
@@ -90,7 +90,7 @@ func TestFakeTickerStop(t *testing.T) {
 		d := time.Nanosecond
 		ticker := c.NewTicker(d)
 
-		c.Add(d)
+		c.Advance(d)
 
 		select {
 		case <-ticker.Chan():
@@ -101,7 +101,7 @@ func TestFakeTickerStop(t *testing.T) {
 		ticker.Stop()
 
 		for i := 0; i < 100; i++ {
-			c.Add(d)
+			c.Advance(d)
 		}
 
 		select {
@@ -119,7 +119,7 @@ func TestFakeTickerStop(t *testing.T) {
 			ticker.Stop()
 		}
 
-		c.Add(time.Hour)
+		c.Advance(time.Hour)
 
 		select {
 		case <-ticker.Chan():
@@ -137,7 +137,7 @@ func TestFakeTickerStopStress(t *testing.T) {
 		ticker := c.NewTicker(d)
 
 		go func() {
-			c.Add(d)
+			c.Advance(d)
 		}()
 
 		actualTime := <-ticker.Chan()

@@ -14,7 +14,7 @@ func TestFakeClockNow(t *testing.T) {
 		expected := time.Time{}
 
 		for i := 0; i < 100; i++ {
-			c.Add(time.Hour)
+			c.Advance(time.Hour)
 			expected = expected.Add(time.Hour)
 
 			now := c.Now()
@@ -30,7 +30,7 @@ func TestFakeClockNow(t *testing.T) {
 		expected := initialTime
 
 		for i := 0; i < 100; i++ {
-			c.Add(time.Hour)
+			c.Advance(time.Hour)
 			expected = expected.Add(time.Hour)
 
 			now := c.Now()
@@ -48,7 +48,7 @@ func TestFakeClockNowStress(t *testing.T) {
 	for i := 0; i < 100000; i++ {
 		wg.Add(1)
 		go func() {
-			c.Add(time.Minute)
+			c.Advance(time.Minute)
 			wg.Done()
 		}()
 	}
@@ -66,7 +66,7 @@ func TestFakeClockAfter(t *testing.T) {
 	ch := c.After(100 * time.Minute)
 
 	for i := 0; i < 99; i++ {
-		c.Add(time.Minute)
+		c.Advance(time.Minute)
 
 		select {
 		case <-ch:
@@ -75,7 +75,7 @@ func TestFakeClockAfter(t *testing.T) {
 		}
 	}
 
-	c.Add(time.Minute)
+	c.Advance(time.Minute)
 	var actualTime time.Time
 
 	select {
@@ -99,7 +99,7 @@ func TestFakeClockAfterFunc(t *testing.T) {
 			close(doneCh)
 		})
 
-		c.Add(5 * time.Minute)
+		c.Advance(5 * time.Minute)
 		time.Sleep(100 * time.Millisecond)
 
 		select {
@@ -108,7 +108,7 @@ func TestFakeClockAfterFunc(t *testing.T) {
 		default:
 		}
 
-		c.Add(5 * time.Minute)
+		c.Advance(5 * time.Minute)
 		<-doneCh
 
 		time.Sleep(100 * time.Millisecond)
@@ -133,7 +133,7 @@ func TestFakeClockAfterFunc(t *testing.T) {
 		}
 
 		for i := 0; i < 10; i++ {
-			c.Add(10 * time.Minute)
+			c.Advance(10 * time.Minute)
 			time.Sleep(10 * time.Millisecond)
 			select {
 			case <-doneCh:
@@ -148,7 +148,7 @@ func TestFakeClockSince(t *testing.T) {
 	tm := (time.Time{}).Add(time.Minute)
 
 	c := clock.NewFakeClock()
-	c.Add(10 * time.Minute)
+	c.Advance(10 * time.Minute)
 
 	expectedSince := 9 * time.Minute
 	actualSince := c.Since(tm)
@@ -156,7 +156,7 @@ func TestFakeClockSince(t *testing.T) {
 		t.Fatalf("Unexpected Since result value, expected=%s, actual=%s", expectedSince, actualSince)
 	}
 
-	c.Add(10 * time.Second)
+	c.Advance(10 * time.Second)
 	expectedSince = expectedSince + 10*time.Second
 	actualSince = c.Since(tm)
 	if expectedSince != actualSince {
@@ -177,7 +177,7 @@ func TestFakeClockUntil(t *testing.T) {
 			t.Fatalf("Unexpected Until result value, expected=%s, actual=%s", expectedUntil, actualUntil)
 		}
 
-		c.Add(time.Minute)
+		c.Advance(time.Minute)
 		expectedUntil -= time.Minute
 	}
 }
@@ -214,7 +214,7 @@ func TestFakeClockSleep(t *testing.T) {
 	default:
 	}
 
-	c.Add(time.Minute)
+	c.Advance(time.Minute)
 
 	select {
 	case <-ch1:
@@ -224,7 +224,7 @@ func TestFakeClockSleep(t *testing.T) {
 		t.Fatal("sleep ends too soon")
 	}
 
-	c.Add(time.Minute)
+	c.Advance(time.Minute)
 
 	select {
 	case <-ch2:
@@ -232,7 +232,7 @@ func TestFakeClockSleep(t *testing.T) {
 		t.Fatal("sleep ends too soon")
 	}
 
-	c.Add(time.Minute)
+	c.Advance(time.Minute)
 	<-ch3
 }
 
@@ -250,14 +250,14 @@ func TestFakeClockTick(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		for i := 0; i < 99; i++ {
-			c.Add(time.Second)
+			c.Advance(time.Second)
 			select {
 			case <-tickCh:
 				t.Fatal("Unexpected ticker's channel receive")
 			default:
 			}
 		}
-		c.Add(time.Second)
+		c.Advance(time.Second)
 		select {
 		case <-tickCh:
 		default:

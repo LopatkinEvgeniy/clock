@@ -96,9 +96,9 @@ func NewFakeClockAt(t time.Time) FakeClock {
 	}
 }
 
-// Add moves current clock's time forward.
+// Advance moves current clock's time forward.
 // It affects all active timers/tickers/sleepers.
-func (c FakeClock) Add(d time.Duration) {
+func (c FakeClock) Advance(d time.Duration) {
 	c.moveTimeForward(d)
 }
 
