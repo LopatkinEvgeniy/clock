@@ -1,6 +1,6 @@
 # clock
 
-[![Build Status](https://travis-ci.org/LopatkinEvgeniy/clock.png?branch=master)](https://travis-ci.org/LopatkinEvgeniy/clock)
+[![Build Status](https://travis-ci.org/LopatkinEvgeniy/clock.png?branch=master)](https://travis-ci.org/LopatkinEvgeniy/clock) [![GoDoc](https://godoc.org/github.com/LopatkinEvgeniy/clock?status.svg)](http://godoc.org/github.com/LopatkinEvgeniy/clock)
 
 Small timer-driven library for mocking time in Go. [Clockwork](https://github.com/jonboulle/clockwork) drop in replacement.
 
