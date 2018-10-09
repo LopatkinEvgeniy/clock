@@ -9,10 +9,8 @@ import (
 // of mock timers, tickers and sleepers.
 type internalTimer struct {
 	clock       *internalClock
-	id          int
 	ch          chan time.Time
 	triggerTime time.Time
-	isActive    bool
 	callback    func()
 	isTicker    bool
 	duration    time.Duration
@@ -26,15 +24,14 @@ type internalTimer struct {
 type internalClock struct {
 	mu          sync.Mutex
 	now         time.Time
-	nextTimerID int
-	timers      map[int]*internalTimer
+	timers      map[*internalTimer]struct{}
 }
 
 // newInternalClock creates a new initialized internalClock instance.
 func newInternalClock(t time.Time) *internalClock {
 	return &internalClock{
 		now:    t,
-		timers: make(map[int]*internalTimer),
+		timers: map[*internalTimer]struct{}{},
 	}
 }
 
@@ -55,14 +52,13 @@ func (c *internalClock) moveTimeForward(d time.Duration) {
 
 	c.now = c.now.Add(d)
 
-	for _, t := range c.timers {
+	for t := range c.timers {
 		if t.triggerTime.After(c.now) {
 			continue
 		}
 
 		if !t.isTicker {
-			t.isActive = false
-			delete(c.timers, t.id)
+			delete(c.timers, t)
 			if t.callback != nil {
 				go t.callback()
 			}
@@ -94,16 +90,13 @@ func (c *internalClock) newInternalTimer(d time.Duration, isTicker bool, callbac
 
 	t := &internalTimer{
 		clock:       c,
-		id:          c.nextTimerID,
 		ch:          make(chan time.Time, 1),
 		triggerTime: c.now.Add(d),
-		isActive:    true,
 		callback:    callback,
 		isTicker:    isTicker,
 		duration:    d,
 	}
-	c.timers[t.id] = t
-	c.nextTimerID++
+	c.timers[t] = struct{}{}
 
 	return t
 }
@@ -114,10 +107,10 @@ func (c *internalClock) stopTimer(t *internalTimer) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	delete(c.timers, t.id)
-
-	timerWasActive := t.isActive
-	t.isActive = false
+	_, timerWasActive := c.timers[t]
+	if timerWasActive {
+		delete(c.timers, t)
+	}
 
 	return timerWasActive
 }
@@ -133,13 +126,12 @@ func (c *internalClock) resetTimer(t *internalTimer, d time.Duration) bool {
 		panic("ticker cannot be reset")
 	}
 
-	timerWasActive := t.isActive
-	t.isActive = true
 	t.triggerTime = c.now.Add(d)
 	t.duration = d
 
+	_, timerWasActive := c.timers[t]
 	if !timerWasActive {
-		c.timers[t.id] = t
+		c.timers[t] = struct{}{}
 	}
 
 	return timerWasActive
