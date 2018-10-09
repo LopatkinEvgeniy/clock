@@ -20,11 +20,10 @@ type internalTimer struct {
 // of base mock clock functionality.
 // internalClock has it's own current time value.
 // All active timers/tickers/waiters are registered here.
-// All internalClock's methods are thread-safe.
 type internalClock struct {
-	mu          sync.Mutex
-	now         time.Time
-	timers      map[*internalTimer]struct{}
+	mu     sync.Mutex
+	now    time.Time
+	timers map[*internalTimer]struct{}
 }
 
 // newInternalClock creates a new initialized internalClock instance.
@@ -57,25 +56,42 @@ func (c *internalClock) moveTimeForward(d time.Duration) {
 			continue
 		}
 
-		if !t.isTicker {
-			delete(c.timers, t)
-			if t.callback != nil {
-				go t.callback()
-			}
-		}
-
-		if t.callback == nil {
-			select {
-			case t.ch <- t.triggerTime:
-			default:
-			}
-		}
-
 		if t.isTicker {
-			for !t.triggerTime.After(c.now) {
-				t.triggerTime = t.triggerTime.Add(t.duration)
-			}
+			c.triggerTicker(t)
+		} else {
+			c.triggerTimer(t)
 		}
+	}
+}
+
+// triggerTicker triggers specified ticker.
+// Lock required.
+func (c *internalClock) triggerTicker(t *internalTimer) {
+	originalTriggerTime := t.triggerTime
+
+	for !t.triggerTime.After(c.now) {
+		t.triggerTime = t.triggerTime.Add(t.duration)
+	}
+
+	select {
+	case t.ch <- originalTriggerTime:
+	default:
+	}
+}
+
+// triggerTimer triggers specified timer.
+// Lock required.
+func (c *internalClock) triggerTimer(t *internalTimer) {
+	delete(c.timers, t)
+
+	if t.callback != nil {
+		go t.callback()
+		return
+	}
+
+	select {
+	case t.ch <- t.triggerTime:
+	default:
 	}
 }
 
