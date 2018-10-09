@@ -22,7 +22,7 @@ func (f *myType) incrementState() {
 	f.state++
 }
 
-func TestFeature(t *testing.T) {
+func TestExample(t *testing.T) {
 	fakeClock := clock.NewFakeClock()
 
 	// create the myType instance with fake clock.
