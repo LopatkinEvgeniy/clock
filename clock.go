@@ -157,6 +157,9 @@ func (c FakeClock) Tick(d time.Duration) <-chan time.Time {
 // NewTicker implements Clock.
 // It returns a new instance of the mock ticker.
 func (c FakeClock) NewTicker(d time.Duration) Ticker {
+	if d <= 0 {
+		panic("non-positive interval for NewTicker")
+	}
 	return mockTicker{
 		internalTimer: c.newInternalTimer(d, true, nil),
 	}

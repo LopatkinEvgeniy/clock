@@ -149,3 +149,25 @@ func TestFakeTickerStopStress(t *testing.T) {
 		ticker.Stop()
 	}
 }
+
+func TestFakeTickerPanicsOnNonPositiveInterval(t *testing.T) {
+	c := clock.NewFakeClock()
+
+	t.Run("zero interval", func(t *testing.T) {
+		defer func() {
+			if recover() == nil {
+				t.Fatal("expected a panic")
+			}
+		}()
+		c.NewTicker(0)
+	})
+
+	t.Run("negative interval", func(t *testing.T) {
+		defer func() {
+			if recover() == nil {
+				t.Fatal("expected a panic")
+			}
+		}()
+		c.NewTicker(-1)
+	})
+}
